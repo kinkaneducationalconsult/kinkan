@@ -20,6 +20,16 @@ import {
   Star,
   Users,
   X,
+  Armchair,
+  Bug,
+  Cat,
+  ChefHat,
+  Coffee,
+  Footprints,
+  Hamburger,
+  HeartHandshake,
+  Rat,
+  Sun,
 } from 'lucide-react'
 
 const programs = [
@@ -72,11 +82,89 @@ function Logo() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) { return <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#ff516f]"><span className="inline-block size-2 rounded-full bg-current" />{children}</p> }
 
+const wordFamilies = ['AT', 'UG', 'UN'] as const
+const startLetters = ['B', 'C', 'H', 'M', 'R', 'S']
+type WordIcon = React.ComponentType<{ className?: string }>
+const lineIcon = (paths: React.ReactNode): WordIcon => function LineIcon({ className }) {
+  return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{paths}</svg>
+}
+// lucide has no bat, mat or rug, so these are drawn in the same line style.
+const BatIcon = lineIcon(<path d="M12 17c-1-1.5-2.5-2-4-1.5 0-1.5-1-2.5-2.5-2.5 0-1.5-1.5-3-3.5-3 2-1.5 5-2 7.5-.5L10.5 7l1 1.5h1l1-1.5 1 2.5c2.5-1.5 5.5-1 7.5.5-2 0-3.5 1.5-3.5 3-1.5 0-2.5 1-2.5 2.5-1.5-.5-3 0-4 1.5Z" />)
+const MatIcon = lineIcon(<><rect x="3" y="7" width="18" height="10" rx="2" /><path d="M7 10.5h10" /><path d="M7 13.5h10" /></>)
+const RugIcon = lineIcon(<><rect x="4" y="7" width="16" height="10" rx="1" /><path d="m12 9.5 2.5 2.5-2.5 2.5-2.5-2.5Z" /><path d="M7 7v10M17 7v10" /><path d="M2 9h2M2 12h2M2 15h2M20 9h2M20 12h2M20 15h2" /></>)
+
+const realWords: Record<string, { icon: WordIcon; sentence: string }> = {
+  BAT: { icon: BatIcon, sentence: 'A bat sleeps all day and flies at night.' },
+  CAT: { icon: Cat, sentence: 'The cat naps in the warm sun.' },
+  HAT: { icon: ChefHat, sentence: 'The cook wears a tall white hat.' },
+  MAT: { icon: MatIcon, sentence: 'Wipe your feet on the mat.' },
+  RAT: { icon: Rat, sentence: 'A rat has a long, thin tail.' },
+  SAT: { icon: Armchair, sentence: 'I sat in a chair to read.' },
+  BUG: { icon: Bug, sentence: 'A little bug crawls on a leaf.' },
+  HUG: { icon: HeartHandshake, sentence: 'Give your friend a big hug.' },
+  MUG: { icon: Coffee, sentence: 'Warm tea is in the mug.' },
+  RUG: { icon: RugIcon, sentence: 'The rug on the floor is soft.' },
+  BUN: { icon: Hamburger, sentence: 'A burger sits in a soft bun.' },
+  RUN: { icon: Footprints, sentence: 'We run and play in the park.' },
+  SUN: { icon: Sun, sentence: 'The sun is bright and hot today.' },
+}
+const totalWords = Object.keys(realWords).length
+
+function LearningCorner() {
+  const [ending, setEnding] = useState<(typeof wordFamilies)[number]>('AT')
+  const [letter, setLetter] = useState<string | null>(null)
+  const [found, setFound] = useState<Set<string>>(() => new Set())
+
+  const word = letter ? letter + ending : null
+  const match = word ? realWords[word] : undefined
+
+  const pickLetter = (item: string) => {
+    setLetter(item)
+    const candidate = item + ending
+    if (realWords[candidate]) setFound(prev => (prev.has(candidate) ? prev : new Set(prev).add(candidate)))
+  }
+  const pickEnding = (item: (typeof wordFamilies)[number]) => { setEnding(item); setLetter(null) }
+
+  return <section className="mx-auto grid max-w-7xl gap-8 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-14 lg:gap-y-0 lg:px-12 lg:py-32">
+    <div className="lg:col-start-1 lg:row-start-1">
+      <SectionLabel>Learning corner</SectionLabel>
+      <h2 className="max-w-lg text-4xl font-black tracking-[-0.04em] sm:text-5xl">A little curiosity goes a long way.</h2>
+      <p className="mt-5 max-w-md text-lg leading-8 text-[#09859b]/65">Pick a word ending, then tap a first letter to build a word. Some letters make real words and some don&apos;t, and that&apos;s okay: learning is not about getting everything right the first time.</p>
+    </div>
+    <div className="max-lg:order-last lg:col-start-1 lg:row-start-2">
+      <div className="lg:mt-9 text-xs font-bold uppercase tracking-[0.18em] text-[#09859b]/55">1. Choose an ending</div>
+      <div className="mt-3 flex gap-3" role="group" aria-label="Word ending">{wordFamilies.map(item => <button key={item} onClick={() => pickEnding(item)} className={`h-12 rounded-full border-2 px-5 text-lg font-black lowercase transition-all ${ending === item ? 'border-[#09859b] bg-[#09859b] text-white shadow-[3px_3px_0_#ff516f]' : 'border-[#09859b]/20 bg-white hover:border-[#09859b]'}`} aria-pressed={ending === item}>-{item}</button>)}</div>
+      <div className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-[#09859b]/55">2. Tap a first letter</div>
+      <div className="mt-3 flex flex-wrap gap-2 sm:gap-3" role="group" aria-label="First letter">{startLetters.map(item => <button key={item} onClick={() => pickLetter(item)} className={`flex size-12 items-center justify-center rounded-2xl border-2 text-xl font-black transition-all sm:size-14 ${letter === item ? 'border-[#ff516f] bg-[#ff516f] text-white shadow-[3px_3px_0_#09859b]' : 'border-[#09859b]/20 bg-white hover:border-[#ff516f]'}`} aria-pressed={letter === item}>{item}</button>)}</div>
+      <p className="mt-7 text-sm font-bold text-[#09859b]/70">Words found: {found.size} of {totalWords}{found.size > 0 && <span className="font-medium text-[#09859b]/55"> · {[...found].join(', ').toLowerCase()}</span>}</p>
+    </div>
+    <div className="flex min-h-[330px] select-none items-center justify-center rounded-[32px] bg-[#eecc3b] p-6 sm:p-8 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      <div className="text-center" aria-live="polite">
+        <div className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#09859b]/55">Can you make a word?</div>
+        <div className="flex items-center justify-center gap-1 text-5xl font-black tracking-[-0.06em] sm:gap-2 sm:text-7xl xl:text-8xl">
+          <span className="text-[#ff516f]">{letter ?? '?'}</span>
+          <span className="text-[#09859b]">+</span>
+          <span className="text-[#0b4f5c]">{ending}</span>
+          <span className="text-[#09859b]">=</span>
+          <span className={match ? 'text-[#ff516f]' : 'text-[#ff516f]/70'}>{match ? word : '?'}</span>
+        </div>
+        <div className="mx-auto mt-6 min-h-[5.5rem] max-w-xs">
+          {!letter && <p className="text-base font-bold text-[#0b4f5c]/80">Tap a letter to start building.</p>}
+          {letter && match && <>
+            <span className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-white/60 text-[#0b4f5c] shadow-[3px_3px_0_#09859b]"><match.icon className="size-9" /></span>
+            <p className="mt-2 text-base font-bold text-[#0b4f5c]"><span className="text-[#ff516f]">{word!.toLowerCase()}</span>: {match.sentence}</p>
+          </>}
+          {letter && !match && <p className="text-base font-bold text-[#0b4f5c]/80">&ldquo;{word!.toLowerCase()}&rdquo; isn&apos;t a word. Nice try! Tap another letter.</p>}
+        </div>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-sm font-bold"><Star className="size-4 fill-[#ff516f] text-[#ff516f]" /> {found.size === totalWords ? 'You found every word!' : 'Keep exploring'}</div>
+      </div>
+    </div>
+  </section>
+}
+
 export function KinkanSite() {
   const [open, setOpen] = useState(false)
-  const [letter, setLetter] = useState('A')
   const [openFaq, setOpenFaq] = useState<number | null>(0)
-  const letters = ['A', 'B', 'C']
   const close = () => setOpen(false)
 
   return <div className="min-h-screen overflow-x-hidden bg-[#fbf8f3] text-[#09859b]">
@@ -117,7 +205,7 @@ export function KinkanSite() {
 
       <section id="about" className="bg-[#09859b] px-5 py-24 text-[#fbf8f3] sm:px-8 lg:py-32"><div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:px-4"><div><SectionLabel>Why Kinkan</SectionLabel><h2 className="max-w-md text-4xl font-black tracking-[-0.04em] sm:text-5xl">Small steps. Strong foundations.</h2></div><div><p className="max-w-2xl text-2xl font-medium leading-relaxed text-[#fbf8f3]/90">Kinkan exists to empower African communities through locally-centred, high-quality educational support. When children feel supported as they learn to read, write, and work with numbers, they carry that confidence with them.</p><div className="mt-10 grid gap-8 border-t border-white/20 pt-8 sm:grid-cols-2"><div><Check className="mb-3 size-6 text-[#eecc3b]" /><h3 className="font-bold">Child-focused</h3><p className="mt-2 leading-7 text-white/60">Learning support shaped around the learner in front of us.</p></div><div><Check className="mb-3 size-6 text-[#ff516f]" /><h3 className="font-bold">Practical & caring</h3><p className="mt-2 leading-7 text-white/60">Clear guidance that families, teachers, and children can use.</p></div></div></div></div></section>
 
-      <section className="mx-auto grid max-w-7xl gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1fr] lg:px-12 lg:py-32"><div><SectionLabel>Learning corner</SectionLabel><h2 className="max-w-lg text-4xl font-black tracking-[-0.04em] sm:text-5xl">A little curiosity goes a long way.</h2><p className="mt-5 max-w-md text-lg leading-8 text-[#09859b]/65">Tap a letter, make a word, and remember: learning is not about getting everything right the first time.</p><div className="mt-9 flex gap-3">{letters.map(item => <button key={item} onClick={() => setLetter(item)} className={`flex size-14 items-center justify-center rounded-2xl border-2 text-xl font-black transition-all ${letter === item ? 'border-[#ff516f] bg-[#ff516f] text-white shadow-[3px_3px_0_#09859b]' : 'border-[#09859b]/20 bg-white hover:border-[#ff516f]'}`} aria-pressed={letter === item}>{item}</button>)}</div></div><div className="flex min-h-[330px] items-center justify-center rounded-[32px] bg-[#eecc3b] p-8"><div className="text-center"><div className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#09859b]/55">Can you make a word?</div><div className="flex items-center justify-center gap-2 text-7xl font-black tracking-[-0.08em] sm:text-9xl"><span className="text-[#ff516f]">{letter}</span><span className="text-[#09859b]">+</span><span className="text-white">B</span><span className="text-[#09859b]">=</span><span className="text-[#ff516f]">?</span></div><div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-sm font-bold"><Star className="size-4 fill-[#ff516f] text-[#ff516f]" /> Keep exploring</div></div></div></section>
+      <LearningCorner />
 
       <section className="bg-[#f3e9dc] px-5 py-24 sm:px-8 lg:py-32"><div className="mx-auto max-w-7xl lg:px-4"><SectionLabel>Our learning areas</SectionLabel><div className="grid gap-10 lg:grid-cols-[0.65fr_1.35fr]"><h2 className="max-w-md text-4xl font-black tracking-[-0.04em] sm:text-5xl">Support for every part of the journey.</h2><div className="grid gap-3 sm:grid-cols-2">{learningAreas.map((area, i) => <a href="#contact" key={area} className="group flex items-center justify-between border-b border-[#09859b]/20 py-4 text-xl font-bold transition-colors hover:text-[#ff516f]"><span><span className="mr-4 text-sm text-[#ff516f]">0{i + 1}</span>{area}</span><ArrowRight className="size-5 -rotate-45 transition-transform group-hover:rotate-0" /></a>)}</div></div></div></section>
 
